@@ -25,52 +25,42 @@ nivel_para_num <- function(x) {
 
 #' Recodificação completa da tabela de alunos
 process_alunos <- function(alunos_raw) {
-  itens_aluno_negativos <- c(
-    "TX_RESP_Q23a", "TX_RESP_Q23b", "TX_RESP_Q23c", "TX_RESP_Q23d",
-    "TX_RESP_Q23e", "TX_RESP_Q23f", "TX_RESP_Q23g", "TX_RESP_Q23h", "TX_RESP_Q23i"
-  )
-
-  alunos_df <- alunos_raw |>
-    dplyr::mutate(
-      dplyr::across(dplyr::all_of(itens_aluno_negativos), letra_para_num),
-      TX_RESP_Q22f_num = letra_para_num(TX_RESP_Q22f),
-      TX_RESP_Q22f_inv = inverter(TX_RESP_Q22f_num, max = 4L)
-    )
-
-  itens_aluno_idx <- c(itens_aluno_negativos, "TX_RESP_Q22f_inv")
-  alunos_df$idx_ambiente_aluno <- rowMeans(alunos_df[, itens_aluno_idx], na.rm = FALSE)
-
-  alunos_clean <- alunos_df |>
+  alunos_clean <- alunos_raw |>
     dplyr::transmute(
       ID_ALUNO,
-      ID_ESCOLA,
-      ID_UF = as.factor(ID_UF),
-      proficiencia_lp = PROFICIENCIA_LP_SAEB,
-      proficiencia_mt = PROFICIENCIA_MT_SAEB,
-      inse            = nivel_para_num(NU_TIPO_NIVEL_INSE),
+      ID_ESCOLA = as.character(ID_ESCOLA),
+      ID_UF     = factor(ID_UF, levels = c(41, 42, 43), labels = c("PR", "SC", "RS")),
+      proficiencia_lp = as.numeric(PROFICIENCIA_LP_SAEB),
+      proficiencia_mt = as.numeric(PROFICIENCIA_MT_SAEB),
+      inse            = as.numeric(NU_TIPO_NIVEL_INSE),
       sexo            = dplyr::if_else(TX_RESP_Q01 == "B", 1L, 0L, missing = NA_integer_),
-      raca_branca     = dplyr::if_else(TX_RESP_Q02 == "A", 1L, 0L, missing = NA_integer_),
-      reprovado       = dplyr::if_else(TX_RESP_Q05 %in% c("B", "C", "D"), 1L, 0L, missing = NA_integer_),
-      abandonou       = dplyr::if_else(TX_RESP_Q06 %in% c("B", "C", "D"), 1L, 0L, missing = NA_integer_),
-      trabalha        = dplyr::case_when(
-        TX_RESP_Q07 %in% c("A") ~ 0L,
-        TX_RESP_Q07 %in% c("B", "C", "D") ~ 1L,
-        TRUE ~ NA_integer_
+      raca_branca     = dplyr::if_else(TX_RESP_Q04 == "A", 1L, 0L, missing = NA_integer_),
+      reprovado       = dplyr::if_else(TX_RESP_Q19 == "B", 1L, 0L, missing = NA_integer_),
+      abandonou       = dplyr::if_else(TX_RESP_Q20 == "B", 1L, 0L, missing = NA_integer_),
+      trabalha        = letra_para_num(TX_RESP_Q21d),
+      escol_mae       = letra_para_num(TX_RESP_Q08),
+      eng_pais        = rowMeans(
+        cbind(
+          letra_para_num(TX_RESP_Q10b),
+          letra_para_num(TX_RESP_Q10c),
+          letra_para_num(TX_RESP_Q10e),
+          letra_para_num(TX_RESP_Q10f)
+        ),
+        na.rm = TRUE
       ),
-      escol_mae = dplyr::case_when(
-        TX_RESP_Q04 == "A" ~ 1L,
-        TX_RESP_Q04 == "B" ~ 2L,
-        TX_RESP_Q04 == "C" ~ 3L,
-        TX_RESP_Q04 == "D" ~ 4L,
-        TX_RESP_Q04 == "E" ~ 5L,
-        TRUE ~ NA_integer_
-      ),
-      eng_pais = rowMeans(cbind(
-        letra_para_num(TX_RESP_Q14),
-        letra_para_num(TX_RESP_Q15),
-        letra_para_num(TX_RESP_Q16)
-      ), na.rm = FALSE),
-      idx_ambiente_aluno
+      idx_ambiente_aluno = rowMeans(
+        cbind(
+          letra_para_num(TX_RESP_Q23d),
+          letra_para_num(TX_RESP_Q23c),
+          letra_para_num(TX_RESP_Q23h),
+          letra_para_num(TX_RESP_Q23i),
+          letra_para_num(TX_RESP_Q22f),
+          letra_para_num(TX_RESP_Q23b),
+          letra_para_num(TX_RESP_Q23a),
+          letra_para_num(TX_RESP_Q23e)
+        ),
+        na.rm = TRUE
+      )
     )
 
   return(alunos_clean)

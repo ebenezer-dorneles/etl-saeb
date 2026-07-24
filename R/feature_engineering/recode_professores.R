@@ -2,14 +2,14 @@
 
 process_professores <- function(professores_raw) {
   itens_violencia <- c(
-    "TX_RESP_Q135", "TX_RESP_Q136", "TX_RESP_Q137", "TX_RESP_Q138",
-    "TX_RESP_Q139", "TX_RESP_Q140", "TX_RESP_Q141", "TX_RESP_Q142",
-    "TX_RESP_Q143", "TX_RESP_Q144", "TX_RESP_Q145", "TX_RESP_Q146"
+    "TX_Q135", "TX_Q136", "TX_Q137", "TX_Q138",
+    "TX_Q139", "TX_Q140", "TX_Q141", "TX_Q142",
+    "TX_Q143", "TX_Q144", "TX_Q145", "TX_Q146"
   )
 
   itens_clima <- c(
-    "TX_RESP_Q120", "TX_RESP_Q121", "TX_RESP_Q122",
-    "TX_RESP_Q123", "TX_RESP_Q124", "TX_RESP_Q125", "TX_RESP_Q126"
+    "TX_Q120", "TX_Q121", "TX_Q122",
+    "TX_Q123", "TX_Q124", "TX_Q125", "TX_Q126"
   )
 
   professores_df <- professores_raw |>

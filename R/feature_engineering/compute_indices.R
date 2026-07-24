@@ -6,7 +6,7 @@ compute_teacher_indices <- function(professores_proc) {
   itens_clima     <- professores_proc$itens_clima
   todos_itens     <- c(itens_violencia, itens_clima)
 
-  mat_prof <- profesores_df[, todos_itens] |> na.omit()
+  mat_prof <- professores_df[, todos_itens] |> na.omit()
   efa_prof <- psych::fa(mat_prof, nfactors = 2, rotate = "promax", fm = "ml")
 
   # Identificação dos fatores
@@ -43,12 +43,12 @@ compute_teacher_indices <- function(professores_proc) {
 process_escolas <- function(escolas_raw) {
   escolas_clean <- escolas_raw |>
     dplyr::transmute(
-      ID_ESCOLA,
-      inse_escola  = nivel_para_num(NU_TIPO_NIVEL_INSE),
-      publica      = dplyr::if_else(ID_DEPENDENCIA_ADM %in% c(1, 2, 3), 1L, 0L, missing = NA_integer_),
+      ID_ESCOLA = as.character(ID_ESCOLA),
+      inse_escola  = nivel_para_num(NIVEL_SOCIO_ECONOMICO),
+      publica      = as.integer(IN_PUBLICA),
       rural        = dplyr::if_else(ID_LOCALIZACAO == 2, 1L, 0L, missing = NA_integer_),
-      form_doc     = suppressWarnings(as.numeric(PC_FORMACAO_DOCENTE)),
-      ln_n_alunos  = log(suppressWarnings(as.numeric(QT_MAT_BAS)) + 1)
+      form_doc     = suppressWarnings(as.numeric(PC_FORMACAO_DOCENTE_MEDIO)),
+      ln_n_alunos  = log(suppressWarnings(as.numeric(NU_MATRICULADOS_CENSO_EM)) + 1)
     )
 
   return(escolas_clean)
