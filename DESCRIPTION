@@ -1,0 +1,30 @@
+Package: etl.educ
+Title: Ambiente Escolar e Desempenho Acadêmico no Ensino Médio (SAEB 2023)
+Version: 0.1.0
+Authors@R: person("Dorneles", role = c("aut", "cre"))
+Description: Análise multinível (HLM) e pipeline ETL dos microdados do SAEB 2023 
+    para a Região Sul do Brasil (PR, SC, RS).
+License: MIT
+Encoding: UTF-8
+RoxygenNote: 7.3.1
+Imports:
+    DBI,
+    duckdb,
+    dbplyr,
+    dplyr,
+    tidyr,
+    ggplot2,
+    scales,
+    forcats,
+    psych,
+    lme4,
+    lmerTest,
+    performance,
+    broom.mixed,
+    httr2,
+    fs,
+    here,
+    glue,
+    dotenv,
+    cli,
+    data.table
