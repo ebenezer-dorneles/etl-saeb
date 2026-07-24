@@ -23,12 +23,15 @@ A motivação teórica parte da literatura sobre **carga alostática** (Evans & 
 │       └── saeb_sul_2023.duckdb      # Banco de dados (gerado pelo pipeline)
 ├── scripts/
 │   ├── pipeline.R                    # Download e ingestão dos microdados brutos
-│   ├── main.R                        # Script principal de análise
-│   └── diagnostico_nas.R             # Script auxiliar de diagnóstico
+│   ├── aed.R                         # Análise exploratória inicial dos alunos
+│   ├── professores.R                 # Processamento e AFE do questionário docente
+│   ├── diagnostico_nas.R             # Diagnóstico de dados faltantes (NAs)
+│   └── main.R                        # Script principal de modelagem multinível (HLM)
 ├── outputs/
 │   ├── fig_01_distribuicao_proficiencia.png
 │   ├── fig_02_prof_por_inse.png
-│   └── fig_03_coeficientes_m3_lp.png
+│   └── fig_02_coeficientes_m3_lp.png
+├── questions.md                      # Perguntas exploratórias e respostas
 └── README.md
 ```
 
@@ -139,7 +142,7 @@ O ICC acima de 10% em ambas as disciplinas justifica plenamente o uso de HLM —
 install.packages(c(
   "DBI", "duckdb", "dplyr", "tidyr", "ggplot2",
   "psych", "lme4", "lmerTest", "performance",
-  "scales", "broom.mixed"
+  "scales", "broom.mixed", "forcats"
 ))
 ```
 
@@ -149,7 +152,10 @@ install.packages(c(
 # 1. Gerar o banco de dados (baixa microdados do INEP)
 Rscript scripts/pipeline.R
 
-# 2. Rodar a análise completa
+# 2. Análise exploratória inicial (opcional)
+Rscript scripts/aed.R
+
+# 3. Rodar a análise completa de modelagem multinível (HLM)
 Rscript scripts/main.R
 
 # Com Docker
