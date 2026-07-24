@@ -2,7 +2,9 @@ pkgs <- c(
   "httr2", "readr", "dplyr", "dbplyr", "ggplot2", "tidyr",
   "stringr", "dotenv", "geobr", "cli", "fs",
   "purrr", "data.table", "readxl", "duckdb",
-  "DBI", "here", "glue", "knitr"
+  "DBI", "here", "glue", "knitr", "psych",
+  "lme4", "lmerTest", "performance", "scales",
+  "broom.mixed", "forcats"
 )
 
 to_install <- pkgs[!pkgs %in% rownames(installed.packages())]
@@ -18,3 +20,7 @@ if (length(to_install) > 0) {
     )
   )
 }
+
+invisible(lapply(pkgs, function(p) {
+  library(p, character.only = TRUE, quietly = TRUE)
+}))
