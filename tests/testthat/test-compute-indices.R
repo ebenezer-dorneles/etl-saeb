@@ -37,8 +37,8 @@ test_that("compute_teacher_indices performs EFA and aggregates by school correct
     ID_ESCOLA = rep(c("101", "102", "103"), each = 10)
   )
   
-  # Populate 12 violence items (correlated with f1_latent)
-  for (i in 1:12) {
+  # Populate 13 violence items (correlated with f1_latent: Q135 to Q147)
+  for (i in 1:13) {
     col_name <- paste0("TX_Q", 134 + i)
     val <- round(f1_latent + rnorm(n, 0, 0.2))
     val[val < 1] <- 1
@@ -46,9 +46,9 @@ test_that("compute_teacher_indices performs EFA and aggregates by school correct
     df_list[[col_name]] <- val
   }
   
-  # Populate 7 climate items (correlated with f2_latent)
-  for (i in 1:7) {
-    col_name <- paste0("TX_Q", 119 + i)
+  # Populate 7 climate items (correlated with f2_latent: Q120, Q122, Q123, Q127 to Q130)
+  clima_cols <- c("TX_Q120", "TX_Q122", "TX_Q123", "TX_Q127", "TX_Q128", "TX_Q129", "TX_Q130")
+  for (col_name in clima_cols) {
     val <- round(f2_latent + rnorm(n, 0, 0.2))
     val[val < 1] <- 1
     val[val > 4] <- 4
@@ -59,8 +59,8 @@ test_that("compute_teacher_indices performs EFA and aggregates by school correct
   
   prof_proc <- list(
     df = mock_df,
-    itens_violencia = paste0("TX_Q", 135:146),
-    itens_clima = paste0("TX_Q", 120:126)
+    itens_violencia = paste0("TX_Q", 135:147),
+    itens_clima = clima_cols
   )
   
   result <- compute_teacher_indices(prof_proc)
