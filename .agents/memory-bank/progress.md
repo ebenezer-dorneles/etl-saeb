@@ -7,6 +7,7 @@
 - [x] Exploratory Data Analysis modularized (`scripts/03_aed.R`).
 - [x] Multilevel modeling script structure M0–M5 (`scripts/04_modeling_hlm.R`).
 - [x] Memory Bank & README updated for the 4-phase refactoring.
+- [x] Unit tests added and verified under Docker (`tests/testthat/test-recode-alunos.R`).
 
 ## Remaining / Ongoing Tasks
 - [ ] Update `questions.md` with final calculated metrics if requested.

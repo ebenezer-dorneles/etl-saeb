@@ -1,4 +1,4 @@
-source("../../R/utils/unzip.R")
+source(here::here("R/utils/unzip_microdata.R"))
 
 test_that("errors if zip path is missing", {
   expect_error(

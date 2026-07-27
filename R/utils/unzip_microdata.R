@@ -5,24 +5,29 @@
 #' @param output_dir The directory to save the unzipped data
 #' @return The output directory
 unzip_microdata <- function(zip_path, dest_dir) {
-
-  file_name <- fs::path_file(zip_path)
-  message_sucess <- glue::glue("✅ {file_name} unzipped successfully!")
-
   if (missing(zip_path)) {
-    stop(glue::glue("\n❌ Please provide the path to the ZIP {file_name}\n"))
-  } else if (missing(dest_dir)) {
-    stop(glue::glue("\n❌ Please provide the path to the output directory {dest_dir}\n"))
+    stop("Please provide the path to the ZIP file.")
+  }
+  
+  if (!file.exists(zip_path)) {
+    stop("The ZIP file does not exist.")
   }
 
-  if (length(fs::dir_ls(dirname(zip_path))) > 0) {
-    message(paste0("\n", message_sucess, "\n"))
+  if (missing(dest_dir)) {
+    stop("Please provide the path to the output directory.")
+  }
+
+  file_name <- fs::path_file(zip_path)
+  message_success <- glue::glue("✅ {file_name} unzipped successfully!")
+
+  if (dir.exists(dest_dir) && length(fs::dir_ls(dest_dir)) > 0) {
+    message(paste0("\n", message_success, "\n"))
     return(invisible(dest_dir))
   }
 
   utils::unzip(zip_path, exdir = dest_dir)
   file.remove(zip_path)
   
-  message(message_sucess)
+  message(message_success)
   return(invisible(dest_dir))
 }
