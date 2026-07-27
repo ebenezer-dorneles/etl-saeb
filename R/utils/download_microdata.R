@@ -8,11 +8,11 @@ download_microdata <- function(url, dest, time_limit = 600) {
   message_sucess <- glue::glue("✅ {file_name} downloaded successfully!")
 
   dir_name <- dirname(dest)
-  if (length(fs::dir_ls(dir_name)) > 0) {
+  if (dir.exists(dir_name) && length(fs::dir_ls(dir_name)) > 0) {
     message(paste0("\n", message_sucess, "\n"))
     return(invisible(dest))
   } else {
-    fs::dir_create(dir_name, showWarnings = FALSE) 
+    fs::dir_create(dir_name, recurse = TRUE) 
   }
 
   tryCatch({
