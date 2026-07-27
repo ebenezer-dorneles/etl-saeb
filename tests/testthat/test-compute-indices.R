@@ -25,22 +25,22 @@ test_that("process_escolas processes school data correctly", {
 })
 
 test_that("compute_teacher_indices performs EFA and aggregates by school correctly", {
-  # Generate 30 mock teachers across 3 schools with correlated values to ensure EFA convergence
+  # Generate 100 mock teachers across 3 schools with correlated values to ensure EFA convergence
   set.seed(42)
-  n <- 30
+  n <- 100
   
   # Latent factors
-  f1_latent <- c(rep(1, 10), rep(2.5, 10), rep(4, 10))
-  f2_latent <- c(rep(4, 10), rep(1, 10), rep(2.5, 10))
+  f1_latent <- c(rep(1, 33), rep(2.5, 33), rep(4, 34))
+  f2_latent <- c(rep(4, 33), rep(1, 33), rep(2.5, 34))
   
   df_list <- list(
-    ID_ESCOLA = rep(c("101", "102", "103"), each = 10)
+    ID_ESCOLA = rep(c("101", "102", "103"), length.out = n)
   )
   
   # Populate 13 violence items (correlated with f1_latent: Q135 to Q147)
   for (i in 1:13) {
     col_name <- paste0("TX_Q", 134 + i)
-    val <- round(f1_latent + rnorm(n, 0, 0.2))
+    val <- round(f1_latent + rnorm(n, 0, 0.1))
     val[val < 1] <- 1
     val[val > 4] <- 4
     df_list[[col_name]] <- val
@@ -49,7 +49,7 @@ test_that("compute_teacher_indices performs EFA and aggregates by school correct
   # Populate 7 climate items (correlated with f2_latent: Q120, Q122, Q123, Q127 to Q130)
   clima_cols <- c("TX_Q120", "TX_Q122", "TX_Q123", "TX_Q127", "TX_Q128", "TX_Q129", "TX_Q130")
   for (col_name in clima_cols) {
-    val <- round(f2_latent + rnorm(n, 0, 0.2))
+    val <- round(f2_latent + rnorm(n, 0, 0.1))
     val[val < 1] <- 1
     val[val > 4] <- 4
     df_list[[col_name]] <- val
@@ -78,7 +78,7 @@ test_that("compute_teacher_indices performs EFA and aggregates by school correct
   # Verify school aggregation
   expect_equal(nrow(result$prof_escola), 3)
   expect_equal(result$prof_escola$ID_ESCOLA, c("101", "102", "103"))
-  expect_equal(result$prof_escola$n_professores, c(10, 10, 10))
+  expect_equal(result$prof_escola$n_professores, c(34, 33, 33))
   expect_true(all(!is.na(result$prof_escola$idx_violencia_escola)))
   expect_true(all(!is.na(result$prof_escola$idx_clima_escola)))
 })
