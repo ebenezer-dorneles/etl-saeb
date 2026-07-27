@@ -23,3 +23,62 @@ test_that("process_escolas processes school data correctly", {
   expect_equal(result$ln_n_alunos[1], log(101))
   expect_equal(result$ln_n_alunos[2], log(1)) # log(0 + 1) = 0
 })
+
+test_that("compute_teacher_indices performs EFA and aggregates by school correctly", {
+  # Generate 30 mock teachers across 3 schools with correlated values to ensure EFA convergence
+  set.seed(42)
+  n <- 30
+  
+  # Latent factors
+  f1_latent <- c(rep(1, 10), rep(2.5, 10), rep(4, 10))
+  f2_latent <- c(rep(4, 10), rep(1, 10), rep(2.5, 10))
+  
+  df_list <- list(
+    ID_ESCOLA = rep(c("101", "102", "103"), each = 10)
+  )
+  
+  # Populate 12 violence items (correlated with f1_latent)
+  for (i in 1:12) {
+    col_name <- paste0("TX_Q", 134 + i)
+    val <- round(f1_latent + rnorm(n, 0, 0.2))
+    val[val < 1] <- 1
+    val[val > 4] <- 4
+    df_list[[col_name]] <- val
+  }
+  
+  # Populate 7 climate items (correlated with f2_latent)
+  for (i in 1:7) {
+    col_name <- paste0("TX_Q", 119 + i)
+    val <- round(f2_latent + rnorm(n, 0, 0.2))
+    val[val < 1] <- 1
+    val[val > 4] <- 4
+    df_list[[col_name]] <- val
+  }
+  
+  mock_df <- dplyr::as_tibble(df_list)
+  
+  prof_proc <- list(
+    df = mock_df,
+    itens_violencia = paste0("TX_Q", 135:146),
+    itens_clima = paste0("TX_Q", 120:126)
+  )
+  
+  result <- compute_teacher_indices(prof_proc)
+  
+  # Check output structure and classes
+  expect_type(result, "list")
+  expect_named(result, c("professores_df", "prof_escola", "efa_model"))
+  expect_s3_class(result$efa_model, "fa")
+  
+  # Verify scores were computed and added
+  expect_true("idx_violencia_prof" %in% names(result$professores_df))
+  expect_true("idx_clima_prof" %in% names(result$professores_df))
+  expect_equal(nrow(result$professores_df), n)
+  
+  # Verify school aggregation
+  expect_equal(nrow(result$prof_escola), 3)
+  expect_equal(result$prof_escola$ID_ESCOLA, c("101", "102", "103"))
+  expect_equal(result$prof_escola$n_professores, c(10, 10, 10))
+  expect_true(all(!is.na(result$prof_escola$idx_violencia_escola)))
+  expect_true(all(!is.na(result$prof_escola$idx_clima_escola)))
+})
