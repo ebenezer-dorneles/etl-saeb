@@ -16,19 +16,34 @@ A motivação teórica parte da literatura sobre **carga alostática** (Evans & 
 
 ## Estrutura do Repositório
 
+Pipeline em 4 estágios sequenciais, cada um lendo/escrevendo no mesmo banco DuckDB (não passam objetos R entre si):
+
 ```
 .
-├── data/
-│   └── db/
-│       └── saeb_sul_2023.duckdb      # Banco de dados (gerado pelo pipeline)
+├── R/
+│   ├── packages.R                          # Lista central de dependências (instala e carrega)
+│   ├── feature_engineering/
+│   │   ├── recode_alunos.R                 # Recodificação e escalas do questionário do aluno
+│   │   ├── recode_professores.R            # Recodificação do questionário do professor
+│   │   └── compute_indices.R               # AFE (violência/clima) e agregação por escola
+│   └── utils/
+│       ├── download_microdata.R            # Download HTTP com retry (httr2)
+│       ├── unzip_microdata.R               # Extração dos microdados
+│       ├── clean_microdata_saeb_2023.R     # Limpeza dos CSVs brutos do SAEB 2023
+│       └── database.R                      # save_table() — escrita idempotente no DuckDB
 ├── scripts/
-│   ├── pipeline.R                    # Download e ingestão dos microdados brutos
-│   ├── main.R                        # Script principal de análise
-│   └── diagnostico_nas.R             # Script auxiliar de diagnóstico
-├── outputs/
-│   ├── fig_01_distribuicao_proficiencia.png
-│   ├── fig_02_prof_por_inse.png
-│   └── fig_03_coeficientes_m3_lp.png
+│   ├── 01_pipeline_raw.R                   # Download + ingestão bruta → tabelas alunos/professores/escolas
+│   ├── 02_build_features.R                 # Recodificação + AFE → tabela base_hlm
+│   ├── 03_aed.R                             # Análise exploratória de dados
+│   └── 04_modeling_hlm.R                    # Modelos HLM M0–M4 (LP e MT) + figuras
+├── data/
+│   ├── raw/                                # Microdados brutos baixados do INEP (SAEB, Censo Escolar, IBGE, IDEB)
+│   └── db/
+│       └── saeb_sul_2023.duckdb            # Banco DuckDB (tabelas brutas + base_hlm), gerado pelo pipeline
+├── tests/testthat/                         # Testes unitários (um arquivo por módulo de R/)
+├── outputs/                                # Figuras e relatórios gerados (não versionado — ver .gitignore)
+├── .manifests/r-base/Dockerfile            # Imagem R reprodutível (rocker/r2u + pacotes do projeto)
+├── docker-compose.yml                      # Serviço `r-base` montando o repositório em /workspace
 └── README.md
 ```
 
@@ -44,7 +59,7 @@ Os microdados são públicos e disponibilizados pelo [INEP](https://www.gov.br/i
 | `professores` | TS_PROFESSOR.csv | ~45 mil |
 | `escolas` | TS_ESCOLA.csv | ~10 mil |
 
-O banco DuckDB é gerado pelo `pipeline.R`, que baixa os arquivos brutos, filtra a Região Sul (`ID_REGIAO == 4`, `ID_UF ∈ {41, 42, 43}`) e persiste as três tabelas localmente.
+O banco DuckDB é gerado por `scripts/01_pipeline_raw.R`, que baixa os arquivos brutos, filtra a Região Sul (`ID_REGIAO == 4`, `ID_UF ∈ {41, 42, 43}`) e persiste as três tabelas localmente.
 
 ---
 
@@ -141,29 +156,43 @@ Uma versão anterior deste índice de violência apresentava coeficientes positi
 ### Pré-requisitos
 
 - R ≥ 4.3
-- Docker (opcional, mas recomendado para ambiente reprodutível)
+- Docker (recomendado — garante o conjunto de pacotes e o certificado SSL necessários para baixar os microdados do INEP)
 
 ### Pacotes R necessários
 
-```r
-install.packages(c(
-  "DBI", "duckdb", "dplyr", "tidyr", "ggplot2",
-  "psych", "lme4", "lmerTest", "performance",
-  "scales", "broom.mixed"
-))
-```
+Centralizados em `R/packages.R` (instala automaticamente o que faltar) e espelhados em `DESCRIPTION` (Imports) e `.manifests/r-base/Dockerfile` (pacotes `r-cran-*`). Principais: `DBI`, `duckdb`, `dbplyr`, `dplyr`, `tidyr`, `ggplot2`, `psych`, `lme4`, `lmerTest`, `performance`, `broom.mixed`, `httr2`, `fs`, `here`, `glue`, `dotenv`, `cli`, `data.table`.
 
 ### Execução
 
+Os scripts devem ser executados a partir da raiz do repositório (usam caminhos relativos como `data/db/...`), na ordem abaixo:
+
 ```bash
-# 1. Gerar o banco de dados (baixa microdados do INEP)
-Rscript scripts/pipeline.R
+# 1. Download e ingestão dos microdados brutos do INEP → tabelas alunos/professores/escolas no DuckDB
+Rscript scripts/01_pipeline_raw.R
 
-# 2. Rodar a análise completa
-Rscript scripts/main.R
+# 2. Feature engineering: recodificação, AFE (violência/clima) e agregação por escola → tabela base_hlm
+Rscript scripts/02_build_features.R
 
-# Com Docker
-docker exec -it r-base Rscript scripts/main.R
+# 3. Análise exploratória de dados
+Rscript scripts/03_aed.R
+
+# 4. Modelagem multinível (HLM M0–M4) para LP e MT + figuras em outputs/
+Rscript scripts/04_modeling_hlm.R
+```
+
+**Com Docker** (recomendado): suba o serviço com `docker-compose up -d` e rode cada script com:
+
+```bash
+docker compose exec r-base Rscript scripts/01_pipeline_raw.R
+docker compose exec r-base Rscript scripts/02_build_features.R
+docker compose exec r-base Rscript scripts/03_aed.R
+docker compose exec r-base Rscript scripts/04_modeling_hlm.R
+```
+
+### Testes
+
+```r
+testthat::test_dir("tests/testthat")
 ```
 
 ---
