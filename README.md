@@ -57,8 +57,8 @@ Três índices foram construídos via **Análise Fatorial Exploratória (AFE)** 
 | Índice | Fonte | Itens | α de Cronbach |
 |---|---|---|---|
 | Percepção de ambiente (aluno) | Questionário do aluno | Q23a–i, Q22f (8 itens) | 0,77 |
-| Violência escolar | Questionário do professor (TX_Q135–Q147) | 12 itens | 0,85 |
-| Clima relacional | Questionário do professor (TX_Q120–Q130) | 7 itens | 0,77 |
+| Violência escolar | Questionário do professor (TX_Q135–Q147) | 13 itens | 0,85 |
+| Clima relacional | Questionário do professor (TX_Q120, Q122, Q123, Q127–Q130) | 7 itens | 0,77 |
 
 Os índices dos professores são **agregados por escola** (média) antes de entrar no modelo, representando a percepção coletiva do corpo docente sobre o ambiente.
 
@@ -80,7 +80,7 @@ M5  Sub-índices separados (F1 e F2) → análise de sensibilidade
 **Hipóteses centrais:**
 
 - **H1** — A percepção de ambiente insalubre pelo aluno está negativamente associada à proficiência, após controlar pelo INSE e características da escola.
-- **H2** — O índice de violência escolar agregado dos professores tem efeito negativo adicional sobre o desempenho, além do efeito individual do aluno.
+- **H2** — O índice de violência escolar agregado dos professores tem efeito negativo adicional sobre o desempenho, além do efeito individual do aluno. *(Confirmado para Matemática; direção negativa mas não significativa para Língua Portuguesa — ver `outputs/03_paradoxo_violencia_docente.md`.)*
 - **H3** — O efeito do ambiente percebido pelo aluno varia entre escolas (slope aleatório significativo), sugerindo moderação por fatores institucionais.
 
 ### Variáveis de controle
@@ -116,13 +116,23 @@ M5  Sub-índices separados (F1 e F2) → análise de sensibilidade
 
 | Indicador | LP | MT |
 |---|---|---|
-| ICC (modelo nulo) | 0,111 | 0,154 |
-| Variância entre escolas | 11,1% | 15,4% |
+| ICC (modelo nulo) | 0,088 | 0,118 |
+| Variância entre escolas | 8,8% | 11,8% |
 | α do índice (aluno) | 0,77 | — |
 | α do índice (violência prof.) | 0,85 | — |
 | α do índice (clima prof.) | 0,77 | — |
 
-O ICC acima de 10% em ambas as disciplinas justifica plenamente o uso de HLM — mais de 1/10 da variância de proficiência está associada a diferenças entre escolas, não entre alunos.
+O ICC entre 9% e 12% justifica o uso de HLM — quase 1/8 da variância de proficiência em Matemática está associada a diferenças entre escolas, não entre alunos.
+
+### Efeito dos índices de ambiente docente (Modelo M3, coeficientes por 1 desvio-padrão)
+
+| Coeficiente | LP | MT |
+|---|---|---|
+| `idx_violencia_escola` | −0,35 (n.s.) | **−0,81** (p = 0,023) |
+| `idx_clima_escola` | **+1,74** (p < 0,001) | **+2,25** (p < 0,001) |
+| `idx_ambiente_aluno` | **+2,26** (p < 0,001) | **+0,45** (p < 0,001) |
+
+Uma versão anterior deste índice de violência apresentava coeficientes positivos e contra-intuitivos, causados por um erro de classificação de itens (itens de gestão institucional indevidamente atribuídos ao fator "clima", e ausência do item de maior gravidade — `TX_Q147`, tiroteio/bala perdida — no fator "violência"). O erro foi corrigido em `R/feature_engineering/recode_professores.R`; a investigação completa, incluindo hipóteses descartadas de viés de seleção e de outliers amostrais, está documentada em `outputs/03_paradoxo_violencia_docente.md`.
 
 ---
 
